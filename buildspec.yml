@@ -1,0 +1,55 @@
+version: 0.2
+
+phases:
+  install:
+    runtime-versions:
+      nodejs: 18
+    commands:
+      - echo Installing dependencies...
+      - npm install -g aws-cli
+  
+  pre_build:
+    commands:
+      - echo Pre-build phase started on `date`
+      - echo Listing source files...
+      - ls -la
+      - echo Checking image files...
+      - ls -la images/ || echo "No images directory found"
+  
+  build:
+    commands:
+      - echo Build phase started on `date`
+      - echo Building meme matching game...
+      
+      # Deploy Lambda function if it exists
+      - |
+        if [ -d "lambda" ]; then
+          echo "Deploying Lambda function..."
+          cd lambda
+          npm install
+          zip -r ../game-api.zip .
+          aws lambda update-function-code --function-name meme-game-api --zip-file fileb://../game-api.zip --region $AWS_DEFAULT_REGION || echo "Lambda function not found, skipping update"
+          cd ..
+        fi
+      
+      # Update API Gateway URL in script.js if API_ENDPOINT environment variable is set
+      - |
+        if [ ! -z "$API_ENDPOINT" ]; then
+          echo "Updating API endpoint in script.js..."
+          sed -i "s|const API_ENDPOINT = 'https://your-api-gateway-url.amazonaws.com/dev'|const API_ENDPOINT = '$API_ENDPOINT'|g" script.js
+        fi
+  
+  post_build:
+    commands:
+      - echo Post-build phase completed on `date`
+      - echo Preparing frontend files for S3 deployment...
+      - echo Build completed successfully!
+
+artifacts:
+  files:
+    - index.html
+    - styles.css
+    - script.js
+    - 'images/**/*'
+  base-directory: '.'
+  name: meme-game-build-$(date +%Y-%m-%d-%H%M%S)
