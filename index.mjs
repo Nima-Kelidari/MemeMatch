@@ -87,7 +87,7 @@ async function getLeaderboard() {
   }));
 
   const leaderboard = (result.Items || [])
-    .sort((a, b) => a.score - b.score)
+    .sort((a, b) =>  b.score - a.score) 
     .slice(0, 10)
     .map(({ time, moves, timestamp, score }) => ({
       time, moves, timestamp, score
