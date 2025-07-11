@@ -50,6 +50,7 @@ artifacts:
     - index.html
     - styles.css
     - script.js
+    - buildspec.yml
     - 'images/**/*'
   base-directory: '.'
   name: meme-game-build-$(date +%Y-%m-%d-%H%M%S)
