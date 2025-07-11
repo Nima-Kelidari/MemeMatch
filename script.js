@@ -1,7 +1,7 @@
 document.addEventListener('DOMContentLoaded', () => {
     const grid = document.querySelector('#game-board');
     const startButton = document.getElementById('start-game');
-    const API_ENDPOINT = 'https://your-api-gateway-url.amazonaws.com/dev';
+    const API_ENDPOINT = 'https://bpp0o4ugy1.execute-api.us-west-2.amazonaws.com/dev';
     let cardsChosen = [];
     let cardsChosenId = [];
     let cardsWon = [];
