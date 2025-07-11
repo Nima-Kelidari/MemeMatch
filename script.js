@@ -80,6 +80,7 @@ document.addEventListener('DOMContentLoaded', () => {
         cardsChosenId = [];
         
         if (cardsWon.length === cardArray.length / 2) {
+            
             gameCompleted();
         }
     }
@@ -87,11 +88,14 @@ document.addEventListener('DOMContentLoaded', () => {
     function gameCompleted() {
         const gameEndTime = new Date();
         const timeTaken = Math.floor((gameEndTime - gameStartTime) / 1000);
-        
-        alert(`Congratulations! You found them all!\nTime: ${timeTaken} seconds\nMoves: ${moves}`);
-        
+
+ 
+        var enteredName = prompt(`Congratulations! You found them all! Time: ${timeTaken} seconds\nMoves: ${moves} \nEnter your name: `)
+        if (enteredName == "" || enteredName == null || enteredName == undefined || enteredName == " " ) {
+            enteredName = "Anonymous";
+        }
         // Send score to Lambda
-        submitScore(timeTaken, moves);
+        submitScore(timeTaken, moves,enteredName);
     }
 
     function updateScoreDisplay() {
@@ -101,6 +105,8 @@ document.addEventListener('DOMContentLoaded', () => {
             scoreDisplay.id = 'score-display';
             scoreDisplay.className = 'score-display';
             document.querySelector('.container').insertBefore(scoreDisplay, grid);
+        }else{
+            scoreDisplay.style.display = 'block';
         }
         
         const timeElapsed = gameStartTime ? Math.floor((new Date() - gameStartTime) / 1000) : 0;
@@ -109,28 +115,7 @@ document.addEventListener('DOMContentLoaded', () => {
         `;
     }
 
-    async function submitScore(time, moves) {
-        try {
-            const response = await fetch(`${API_ENDPOINT}/submit-score`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    time: time,
-                    moves: moves,
-                    timestamp: new Date().toISOString()
-                })
-            });
-            
-            if (response.ok) {
-                const result = await response.json();
-                console.log('Score submitted successfully:', result);
-            }
-        } catch (error) {
-            console.error('Error submitting score:', error);
-        }
-    }
+
 
     async function loadLeaderboard() {
         try {
@@ -158,7 +143,7 @@ document.addEventListener('DOMContentLoaded', () => {
             <div class="leaderboard-content">
                 ${leaderboard.map((score, index) => `
                     <div class="leaderboard-item">
-                        <span>${index + 1}. Time: ${score.time}s, Moves: ${score.moves}</span>
+                        <span>${index + 1}. Time: ${score.time}s, Moves: ${score.moves}, Score: ${score.score}, Name: ${score.name}</span>
                     </div>
                 `).join('')}
             </div>
@@ -166,8 +151,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Add these functions to your existing script.js
-    async function submitScore(time, moves) {
+    async function submitScore(time, moves,name) {
         try {
+
             const response = await fetch(`${API_ENDPOINT}/submit-score`, {
                 method: 'POST',
                 headers: {
@@ -176,7 +162,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 body: JSON.stringify({
                     time: time,
                     moves: moves,
-                    timestamp: new Date().toISOString()
+                    timestamp: new Date().toISOString(),
+                    name: name
                 })
             });
             
@@ -190,38 +177,9 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    async function loadLeaderboard() {
-        try {
-            const response = await fetch(`${API_ENDPOINT}/leaderboard`);
-            if (response.ok) {
-                const leaderboard = await response.json();
-                displayLeaderboard(leaderboard);
-            }
-        } catch (error) {
-            console.error('Error loading leaderboard:', error);
-        }
-    }
 
-    function displayLeaderboard(leaderboard) {
-        let leaderboardDiv = document.getElementById('leaderboard');
-        if (!leaderboardDiv) {
-            leaderboardDiv = document.createElement('div');
-            leaderboardDiv.id = 'leaderboard';
-            leaderboardDiv.className = 'leaderboard';
-            document.querySelector('.container').appendChild(leaderboardDiv);
-        }
-        
-        leaderboardDiv.innerHTML = `
-            <h3>🏆 Leaderboard</h3>
-            <div class="leaderboard-content">
-                ${leaderboard.length > 0 ? leaderboard.map((score, index) => `
-                    <div class="leaderboard-item">
-                        <span>${index + 1}. Time: ${score.time}s, Moves: ${score.moves}</span>
-                    </div>
-                `).join('') : '<div class="leaderboard-item">No scores yet!</div>'}
-            </div>
-        `;
-    }
+
+
 
     startButton.addEventListener('click', () => {
         createBoard();
